@@ -1,0 +1,206 @@
+local ui = game:GetService("CoreGui"):FindFirstChild("MacLib")
+if ui then 
+    ui:Destroy() 
+end
+
+repeat wait() until game:IsLoaded()
+wait()
+
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    game:GetService("VirtualUser"):ClickButton1(Vector2.new(9e9, 9e9))
+end)
+
+
+local player = game:GetService("Players").LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+local imageButton = Instance.new("ImageButton")
+
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+imageButton.Parent = screenGui
+imageButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+imageButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+imageButton.BorderSizePixel = 0
+imageButton.Position = UDim2.new(0.486806184, 0, 0.126297578, 0)
+imageButton.Size = UDim2.new(0, 57, 0, 56)
+imageButton.Image = "http://www.roblox.com/asset/?id=5430597512"
+
+local isVisible = false
+
+imageButton.MouseButton1Click:Connect(function()
+    local coreGui = game:GetService("CoreGui")
+    local macLib = coreGui:FindFirstChild("MacLib")
+
+    if macLib then
+        isVisible = not isVisible
+        macLib.Enabled = isVisible
+    end
+end)
+
+local function bodyvel(Part, Speed, Destination, Extra, waittime)
+    local Speed = Speed or 1
+    local Part = Part or nil
+    local Destination = Destination
+    local waittime = waittime or 0
+    local NewBodyVel = Instance.new("BodyVelocity")
+    NewBodyVel.Parent = Part
+    if typeof(Destination) == "Instance" then
+        NewBodyVel.Velocity = (Destination.Position - Part.Position).Unit * Speed
+        if Extra then
+            NewBodyVel.MaxForce = Vector3.new(Extra, Extra, Extra)
+            NewBodyVel.P = Extra
+        end
+        repeat
+            wait()
+            NewBodyVel.Velocity = (Destination.Position - Part.Position).Unit * Speed
+        until (Destination.Position - Part.Position).Magnitude < 5
+        NewBodyVel.Velocity = Vector3.new(0, 0, 0)
+        wait(waittime)
+        NewBodyVel:Destroy()
+    else
+        NewBodyVel.Velocity = (Destination - Part.Position).Unit * Speed
+        if Extra then
+            NewBodyVel.MaxForce = Vector3.new(Extra, Extra, Extra)
+            NewBodyVel.P = Extra
+        end
+        repeat
+            wait()
+            NewBodyVel.Velocity = (Destination - Part.Position).Unit * Speed
+        until (Destination - Part.Position).Magnitude < 5
+        NewBodyVel.Velocity = Vector3.new(0, 0, 0)
+        wait(waittime)
+        NewBodyVel:Destroy()
+    end
+end
+
+local function ReturnCar()
+    local playerName = game.Players.LocalPlayer.Name
+    local vehicleFolder = game:GetService("Workspace").Vehicles:FindFirstChild(playerName)
+    if vehicleFolder then
+        for _, v in pairs(vehicleFolder:GetChildren()) do
+            if v:IsA("Model") then 
+                return v
+            end
+        end
+    end
+    return nil 
+end
+
+local Settings = {
+    Speed = false,
+    Speeds = 1,
+}
+
+local MacLib = loadstring(game:HttpGet("https://github.com/biggaboy212/Maclib/releases/latest/download/maclib.txt"))()
+
+local Window = MacLib:Window({
+    Title = "THE RIDE",
+    Subtitle = "by doit_only.",
+    Size = UDim2.fromOffset(868, 650),
+    DragStyle = 1,
+    DisabledWindowControls = {},
+    ShowUserInfo = true,
+    Keybind = Enum.KeyCode.RightControl,
+    AcrylicBlur = true,
+})
+
+local globalSettings = {
+    UIBlurToggle = Window:GlobalSetting({
+        Name = "UI Blur",
+        Default = Window:GetAcrylicBlurState(),
+        Callback = function(bool)
+            Window:SetAcrylicBlurState(bool)
+            Window:Notify({
+                Title = Window.Settings.Title,
+                Description = (bool and "Enabled" or "Disabled") .. " UI Blur",
+                Lifetime = 5
+            })
+        end,
+    }),
+    NotificationToggler = Window:GlobalSetting({
+        Name = "Notifications",
+        Default = Window:GetNotificationsState(),
+        Callback = function(bool)
+            Window:SetNotificationsState(bool)
+            Window:Notify({
+                Title = Window.Settings.Title,
+                Description = (bool and "Enabled" or "Disabled") .. " Notifications",
+                Lifetime = 5
+            })
+        end,
+    }),
+    ShowUserInfo = Window:GlobalSetting({
+        Name = "Show User Info",
+        Default = Window:GetUserInfoState(),
+        Callback = function(bool)
+            Window:SetUserInfoState(bool)
+            Window:Notify({
+                Title = Window.Settings.Title,
+                Description = (bool and "Showing" or "Redacted") .. " User Info",
+                Lifetime = 5
+            })
+        end,
+    })
+}
+
+local tabGroups = {
+    TabGroup1 = Window:TabGroup()
+}
+
+local tabs = {
+    Main = tabGroups.TabGroup1:Tab({ Name = "Main", Image = "rbxassetid://18821914323" }),
+    Settings = tabGroups.TabGroup1:Tab({ Name = "Settings", Image = "rbxassetid://10734950309" })
+}
+
+local sections = {
+    MainSection1 = tabs.Main:Section({ Side = "Left" })
+}
+
+sections.MainSection1:Header({
+    Name = "Autofarm"
+})
+
+
+sections.MainSection1:Toggle({
+    Name = "AutoFarm",
+    Default = Settings.Speed,
+    Callback = function(value)
+        Settings.Speed = value
+        spawn(function()
+            while wait() and Settings.Speed do
+                wait(Settings.Speeds)
+                pcall(function()
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "W", false, game)
+                    wait(0.75)
+                    game:GetService("VirtualInputManager"):SendKeyEvent(true, "E", false, game)
+                    local car = ReturnCar()
+                    if car then
+                        car:SetPrimaryPartCFrame(CFrame.new(477.737122, 3.3383224, 535.145935, 0.311659038, 4.70928576e-08, -0.950194001, -3.14115667e-08, 1, 3.92584667e-08, 0.950194001, 1.76118267e-08, 0.311659038))
+                    end
+                end)
+            end
+        end)
+    end
+})
+
+sections.MainSection1:Slider({
+    Name = "AutoFarm Speed",
+    Default = Settings.Speeds,
+    Minimum = 0,
+    Maximum = 7,
+    DisplayMethod = "Number",
+    Precision = 0,
+    Callback = function(Value)
+        Settings.Speeds = Value
+    end
+})
+
+MacLib:SetFolder("Maclib")
+tabs.Settings:InsertConfigSection("Left")
+
+Window.onUnloaded(function()
+    print("Unloaded!")
+end)
+
+tabs.Main:Select()
+MacLib:LoadAutoLoadConfig()
